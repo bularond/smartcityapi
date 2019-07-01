@@ -1,10 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import smtplib as smtp
-from getpass import getpass
 
-#with open("users.pickle", "rb") as f:
-#    data_new = pickle.load(f)
+
 class SMTP:
     def __init__(self, from_mail, password):
         self.from_mail = from_mail
