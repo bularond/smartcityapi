@@ -127,4 +127,4 @@ def get_today_info():
 
 if __name__ == "__main__":
     f= open('cash/data.txt', 'w')
-    f.write('\n\n'.join(map(str, get_today_info())))
+    f.write(',\n'.join(map(str, get_today_info())))
