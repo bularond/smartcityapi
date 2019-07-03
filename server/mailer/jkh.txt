@@ -1,0 +1,103 @@
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 17, 0), 'street': 'Фурманов', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 17, 0), 'street': 'Карчикян', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Форелева', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Дубравска', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Пензенска', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Тиха', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Мир', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Гусаровска', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Ереванска', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Гаранян', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 18, 0), 'street': 'Ученическа', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 14, 0), 'street': 'Циолковског', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 14, 0), 'street': 'Побед', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 14, 0), 'street': 'Мирна', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': '', 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Конституци', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 20, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 21, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 22, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 23, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 24, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 25, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 26, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 27, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 28, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 29, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 30, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 31, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 32, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 33, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 34, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 35, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 36, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 37, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 38, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 39, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Воровского', 'home_number': 40, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 30, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 31, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 32, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 33, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 34, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 35, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 36, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 37, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 38, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 39, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Роз', 'home_number': 40, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Пластунска', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Яна Фабрициус', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 5, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Бзугу', 'home_number': 0, 'type': 'energy'}
+
+{'begin': datetime.datetime(2019, 7, 2, 8, 0), 'end': datetime.datetime(2019, 7, 2, 20, 0), 'street': 'Севастопольска', 'home_number': 0, 'type': 'energy'}
