@@ -124,6 +124,8 @@ def get_today_info():
             flag = not flag
         
         return data
+    else:
+        return []
 
 if __name__ == "__main__":
     f= open('cash/data.txt', 'w')
