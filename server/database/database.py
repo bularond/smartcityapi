@@ -20,14 +20,19 @@ class Database:
     def delete_old_than_date(self, date):
         self.dhu.remove({'end': {'$lt': date}})
 
-    def get_information_on_day(self):
-        return self.dhu.find({'begin': {'$gte': datetime.today()}})
+    def get_information_on_days(self, begin = datetime.today(), end = None):
+        if(end == None):
+            end = begin
+        return list(self.dhu.find({'begin': {'$gte': begin, '$lte': end}}))
 
     def get_users_match_data(self, data):
         match_users = []
         for dhu_data in data:
             if(dhu_data['home_number'] == 0):
-                match_users.append(self.user.find({'street': dhu_data['street']}))
+                temp_list = list(self.user.find({'street': dhu_data['street']}))
+                for man_id in range(len(temp_list)):
+                    temp_list[man_id].update(dhu_data)
+                match_users += temp_list
             else:
                 temp_list = list(self.user.find({'street': dhu_data['street'], 'home_number': dhu_data['home_number']}))
                 for man_id in range(len(temp_list)):

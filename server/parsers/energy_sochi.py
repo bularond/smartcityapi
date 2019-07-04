@@ -96,18 +96,19 @@ def get_info_on_day(day = datetime.today()):
                     dict_with_street = dict_with_date.copy()
                     dict_with_street['street'] = re.search(r'ул.[^№]+', part)[0][3:-1]
                     #если указано несколько домов
-                    if(re.search(r'№№[0-9]+ - [0-9]+', part)):
-                        match = re.search(r'№№\d+ - \d+', part)[0]
-                        start, _, end = match[2:].split()
-                        start, end = int(start), int(end)
+                    if(re.search(r'№№ *[0-9]+[ ]*-[ ]*[0-9]+', part)):
+                        match = re.search(r'№№ *[0-9]+ *- *[0-9]+', part)[0]
+                        match = ''.join(match.split())
+                        start, end = map(int, match[2:].split('-'))
 
                         for home_number in range(start, end + 1):
                             dict_with_number = copy(dict_with_street)
                             dict_with_number['home_number'] = home_number
                             output_data.append(dict_with_number)
                     #если указан 1 дом
-                    elif(re.search(r'№[0-9]+', part)):
+                    elif(re.search(r'№ *[0-9]+', part)):
                         match = re.search(r'№[0-9]+', part)[0]
+                        match = ''.join(match.split())
                         home_number = match[0][1:]
 
                         dict_with_number = copy(dict_with_street)
