@@ -29,17 +29,17 @@ def get_new_url_with_current_date(date):
 
     return None
 
-def get_today_info():
+def get_info_on_day(day = datetime.today()):
     """
     Возвращает лист словарей['begin', 'end', 'streets', 'type']
     """
 
-    url = get_new_url_with_current_date(date.today())
+    url = get_new_url_with_current_date(day)
 
     if(url != None):
-        data = []
 
-        def str_list_to_datetime(ls):
+        def str_list_to_datetime(text):
+            text = text[4:-1]
             month = {
                 "января": 1,
                 "февраля": 2,
@@ -54,11 +54,22 @@ def get_today_info():
                 "ноября": 11,
                 "декабря": 12
             }
-            hour, minute = map(int, ls[2].split('.'))
-            return datetime(date.today().year, month[ls[1]], int(ls[0]), hour, minute)
+            # С 20.00 3 июля до 06.00 4 июля
+            if(re.match(r'С [0-9]{2}\.[0-9]{2} [0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря) до [0-9]{2}\.[0-9]{2} [0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)',text)):
+                text = text.split()
+                return [
+                    datetime(date.today().year, month[text[3]], int(text[2]), *map(int, text[1].split('.'))),
+                    datetime(date.today().year, month[text[7]], int(text[6]), *map(int, text[5].split('.')))
+                ]
+            # 5 июля с 08.00 до 17.00
+            elif(re.match(r'[0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря) с [0-9]{2}\.[0-9]{2} до [0-9]{2}\.[0-9]{2}', text)):
+                text = text.split()
+                return [
+                    datetime(date.today().year, month[text[1]], int(text[0]), *map(int, text[3].split('.'))),
+                    datetime(date.today().year, month[text[1]], int(text[0]), *map(int, text[5].split('.')))
+                ]
 
         def str_to_streets(st, dict_with_date):
-
             # убираю все скобочки
             while(st.count('(')):
                 st = st[:st.find('(')-1] + st[st.find(')')+1:]
@@ -76,6 +87,9 @@ def get_today_info():
             в мкр Дагомыс Барановское шоссе 
             проспект Октябрьский 
             '''
+
+            output_data = []
+
             #TODO сделать обработку проспектов и преулков
             for part in ls:
                 if(part.find('ул.') != -1):
@@ -90,7 +104,7 @@ def get_today_info():
                         for home_number in range(start, end + 1):
                             dict_with_number = copy(dict_with_street)
                             dict_with_number['home_number'] = home_number
-                            data.append(dict_with_number)
+                            output_data.append(dict_with_number)
                     #если указан 1 дом
                     elif(re.search(r'№[0-9]+', part)):
                         match = re.search(r'№[0-9]+', part)[0]
@@ -98,11 +112,14 @@ def get_today_info():
 
                         dict_with_number = copy(dict_with_street)
                         dict_with_number['home_number'] = home_number
-                        data.append(dict_with_number)
+                        output_data.append(dict_with_number)
                     #значит дома не указаны, добавляем с 'home_number' = 0
                     else:
-                        data.append(dict_with_street)
+                        output_data.append(dict_with_street)
 
+            return output_data
+
+        data = []
 
         page = requests.get(url)
         soup = BeautifulSoup(page.text, 'html.parser')
@@ -115,12 +132,15 @@ def get_today_info():
         for text_item in text_list.find_all('p')[:-1]:
             if (flag):
                 dict_with_date = {'begin': None, 'end': None, 'street': '', 'home_number': 0, 'type': 'energy'}
-                text = text_item.contents[0].split()
-                dict_with_date['begin'] = str_list_to_datetime(text[:2] + [text[3]])
-                dict_with_date['end'] = str_list_to_datetime(text[:2] + [text[5]])
+                text = text_item.contents[0]
+                text = text[: text.find('(') if text.find('(') != -1 else -1]
+                dates = str_list_to_datetime(text)
+                if(dates == None):
+                    continue
+                dict_with_date['begin'], dict_with_date['end'] = str_list_to_datetime(text)
             else:
                 text = text_item.contents[0][4:-3]
-                str_to_streets(text, dict_with_date)
+                data += str_to_streets(text, dict_with_date)
             flag = not flag
         
         return data
@@ -129,4 +149,4 @@ def get_today_info():
 
 if __name__ == "__main__":
     f= open('cash/data.txt', 'w')
-    f.write(',\n'.join(map(str, get_today_info())))
+    f.write(',\n'.join(map(str, get_info_on_day())))
