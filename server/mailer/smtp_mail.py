@@ -15,10 +15,10 @@ class SMTP:
         dest_email = to_mail
         subject = subject
         email_text = message
-        '''message = 'From: {}\nTo: {}\nSubject: {}\n\n{}'.format(email,
+        message = 'From: {}\nTo: {}\nSubject: {}\n\n{}'.format(email,
                                                                dest_email,
                                                                subject,
-                                                               email_text)'''
+                                                               email_text)
 
         server = smtp.SMTP_SSL('smtp.yandex.com')
         server.set_debuglevel(1)

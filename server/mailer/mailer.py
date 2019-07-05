@@ -24,7 +24,8 @@ def send_messages(message_list):
         "energy": "отключение электричества"
     }
     for man in message_list:
-        message = ''
+        message = f"""Уважаемый {man["FIO"]}!
+Хотим сообщить, что {str(man["begin"].day)} {str(month[man["begin"].month])} на улице {man["street"]} планируется {types[man["type"]]}."""
         smtp_obj.send_message(man["mail"], message, "Отключение электроэнергии")
 
 
