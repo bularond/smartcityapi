@@ -31,6 +31,88 @@ def get_new_url_with_current_date(date):
 
     return None
 
+def str_list_to_datetime(text):
+    text = text[4:-1]
+    month = {
+        "января": 1,
+        "февраля": 2,
+        "марта": 3,
+        "апреля": 4,
+        "мая": 5,
+        "июня": 6,
+        "июля": 7,
+        "августа": 8,
+        "сентября": 9,
+        "октября": 10,
+        "ноября": 11,
+        "декабря": 12
+    }
+    # С 20.00 3 июля до 06.00 4 июля
+    if(re.match(r'С [0-9]{2}\.[0-9]{2} [0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря) до [0-9]{2}\.[0-9]{2} [0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)',text)):
+        text = text.split()
+        return [
+            datetime(date.today().year, month[text[3]], int(text[2]), *map(int, text[1].split('.'))),
+            datetime(date.today().year, month[text[7]], int(text[6]), *map(int, text[5].split('.')))
+        ]
+    # 5 июля с 08.00 до 17.00
+    elif(re.match(r'[0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря) с [0-9]{2}\.[0-9]{2} до [0-9]{2}\.[0-9]{2}', text)):
+        text = text.split()
+        return [
+            datetime(date.today().year, month[text[1]], int(text[0]), *map(int, text[3].split('.'))),
+            datetime(date.today().year, month[text[1]], int(text[0]), *map(int, text[5].split('.')))
+        ]
+
+def str_to_streets(st, dict_with_date):
+    # убираю все скобочки
+    while(st.count('(')):
+        st = st[:st.find('(')-1] + st[st.find(')')+1:]
+
+    # разделяю по ', ' и '; '
+    ls = '; '.join(st.split(', ')).split('; ')
+
+    '''
+    Шаблоны встречающихся объектов
+
+    ул.Фурманова
+    форелевый завод
+    в поселке Бестужевское ул.Дубравская
+    ул.Воровского №№20 - 40
+    в мкр Дагомыс Барановское шоссе 
+    проспект Октябрьский 
+    '''
+
+    output_data = []
+
+    #TODO сделать обработку проспектов и преулков
+    for part in ls:
+        if(part.find('ул.') != -1):
+            dict_with_street = dict_with_date.copy()
+            dict_with_street['street'] = re.search(r'ул.[^№]+', part)[0][3:-1]
+            #если указано несколько домов
+            if(re.search(r'№№ *[0-9]+[ ]*-[ ]*[0-9]+', part)):
+                match = re.search(r'№№ *[0-9]+ *- *[0-9]+', part)[0]
+                match = ''.join(match.split())
+                start, end = map(int, match[2:].split('-'))
+
+                for home_number in range(start, end + 1):
+                    dict_with_number = copy(dict_with_street)
+                    dict_with_number['home_number'] = home_number
+                    output_data.append(dict_with_number)
+            #если указан 1 дом
+            elif(re.search(r'№ *[0-9]+', part)):
+                match = re.search(r'№[0-9]+', part)[0]
+                match = ''.join(match.split())
+                home_number = match[0][1:]
+
+                dict_with_number = copy(dict_with_street)
+                dict_with_number['home_number'] = home_number
+                output_data.append(dict_with_number)
+            #значит дома не указаны, добавляем с 'home_number' = 0
+            else:
+                output_data.append(dict_with_street)
+
+    return output_data
+
 def get_info_on_day(day):
     """
     Возвращает лист словарей['begin', 'end', 'streets', 'type']
@@ -39,88 +121,6 @@ def get_info_on_day(day):
     url = get_new_url_with_current_date(day)
 
     if(url != None):
-
-        def str_list_to_datetime(text):
-            text = text[4:-1]
-            month = {
-                "января": 1,
-                "февраля": 2,
-                "марта": 3,
-                "апреля": 4,
-                "мая": 5,
-                "июня": 6,
-                "июля": 7,
-                "августа": 8,
-                "сентября": 9,
-                "октября": 10,
-                "ноября": 11,
-                "декабря": 12
-            }
-            # С 20.00 3 июля до 06.00 4 июля
-            if(re.match(r'С [0-9]{2}\.[0-9]{2} [0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря) до [0-9]{2}\.[0-9]{2} [0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)',text)):
-                text = text.split()
-                return [
-                    datetime(date.today().year, month[text[3]], int(text[2]), *map(int, text[1].split('.'))),
-                    datetime(date.today().year, month[text[7]], int(text[6]), *map(int, text[5].split('.')))
-                ]
-            # 5 июля с 08.00 до 17.00
-            elif(re.match(r'[0-9]+ (января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря) с [0-9]{2}\.[0-9]{2} до [0-9]{2}\.[0-9]{2}', text)):
-                text = text.split()
-                return [
-                    datetime(date.today().year, month[text[1]], int(text[0]), *map(int, text[3].split('.'))),
-                    datetime(date.today().year, month[text[1]], int(text[0]), *map(int, text[5].split('.')))
-                ]
-
-        def str_to_streets(st, dict_with_date):
-            # убираю все скобочки
-            while(st.count('(')):
-                st = st[:st.find('(')-1] + st[st.find(')')+1:]
-
-            # разделяю по ', ' и '; '
-            ls = '; '.join(st.split(', ')).split('; ')
-
-            '''
-            Шаблоны встречающихся объектов
-
-            ул.Фурманова
-            форелевый завод
-            в поселке Бестужевское ул.Дубравская
-            ул.Воровского №№20 - 40
-            в мкр Дагомыс Барановское шоссе 
-            проспект Октябрьский 
-            '''
-
-            output_data = []
-
-            #TODO сделать обработку проспектов и преулков
-            for part in ls:
-                if(part.find('ул.') != -1):
-                    dict_with_street = dict_with_date.copy()
-                    dict_with_street['street'] = re.search(r'ул.[^№]+', part)[0][3:-1]
-                    #если указано несколько домов
-                    if(re.search(r'№№ *[0-9]+[ ]*-[ ]*[0-9]+', part)):
-                        match = re.search(r'№№ *[0-9]+ *- *[0-9]+', part)[0]
-                        match = ''.join(match.split())
-                        start, end = map(int, match[2:].split('-'))
-
-                        for home_number in range(start, end + 1):
-                            dict_with_number = copy(dict_with_street)
-                            dict_with_number['home_number'] = home_number
-                            output_data.append(dict_with_number)
-                    #если указан 1 дом
-                    elif(re.search(r'№ *[0-9]+', part)):
-                        match = re.search(r'№[0-9]+', part)[0]
-                        match = ''.join(match.split())
-                        home_number = match[0][1:]
-
-                        dict_with_number = copy(dict_with_street)
-                        dict_with_number['home_number'] = home_number
-                        output_data.append(dict_with_number)
-                    #значит дома не указаны, добавляем с 'home_number' = 0
-                    else:
-                        output_data.append(dict_with_street)
-
-            return output_data
 
         data = []
 
