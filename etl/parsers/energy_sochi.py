@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import requests
 from bs4 import BeautifulSoup
 from datetime import date, datetime
@@ -29,7 +31,7 @@ def get_new_url_with_current_date(date):
 
     return None
 
-def get_info_on_day(day = datetime.today()):
+def get_info_on_day(day):
     """
     Возвращает лист словарей['begin', 'end', 'streets', 'type']
     """
