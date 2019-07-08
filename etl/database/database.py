@@ -25,6 +25,9 @@ class Database:
             end = begin
         return list(self.dhu.find({'begin': {'$gte': begin, '$lte': end}}))
 
+    def find_in_dhu(self, request_dict):
+        return list(self.dhu.find(request_dict))
+
     def get_users_match_data(self, data):
         match_users = []
         for dhu_data in data:
@@ -39,3 +42,9 @@ class Database:
                     temp_list[man_id].update(dhu_data)
                 match_users += temp_list
         return match_users
+
+if __name__ == "__main__":
+    db = Database()
+    data = db.find_in_dhu({})
+    print(type(data))
+    print(data[0])
