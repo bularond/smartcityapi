@@ -15,4 +15,4 @@ if __name__ == '__main__':
     finally:
         db.close()
     '''
-    str_to_geo_data("спб Тверская 6")
+    print(*str_to_geo_data("сочи  ул.Земляничная"), sep = '\n')
