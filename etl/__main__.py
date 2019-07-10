@@ -1,18 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from parsers.energy_sochi import get_info_on_day
-from database.database import Database
-from mailer.mailer import send_messages
+from parsers.energy_kazan import get_data_from_day
 from datetime import datetime, timedelta
+from database import Database
+import time
 
 if __name__ == '__main__':
-
     db = Database()
-    try:
-        db.load_engergy_data(get_info_on_day())
-        db.delete_old_than_date(datetime.today())
-        
-        dhu_torday_and_yestorday = db.get_information_on_days(datetime.today(), datetime.today() + timedelta(days=1))
-        send_messages(db.get_users_match_data(dhu_torday_and_yestorday))
-    finally:
-        db.close() 
+    start_time = time.time()
+    data = get_data_from_day(datetime(2019, 5, 7))
+    db.load_data(data)
+    print(time.time() - start_time)
+    print(len(data))
