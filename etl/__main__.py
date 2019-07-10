@@ -1,18 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from parsers.energy_sochi import get_info_on_day
-from database import Database
+from parsers.energy_kazan import get_data_from_day
 from datetime import datetime, timedelta
-from yandex_geocoder.yandex_geocoder import str_to_geo_data
+from database import Database
+import time
 
 if __name__ == '__main__':
-    '''
     db = Database()
-    try:
-        energy_data = get_info_on_day(datetime(year=2019, mouth=7, day=4, hour=12))
-        db.load_data(energy_data)
-        #db.delete_old_than_date(datetime.today())
-    finally:
-        db.close()
-    '''
-    print(*str_to_geo_data("сочи  ул.Земляничная"), sep = '\n')
+    start_time = time.time()
+    data = get_data_from_day(datetime(2019, 5, 7))
+    db.load_data(data)
+    print(time.time() - start_time)
+    print(len(data))

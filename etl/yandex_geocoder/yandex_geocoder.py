@@ -112,7 +112,7 @@ def object_to_need_format(inp):
     '''
     inp = inp['GeoObject']
     out = {}
-    out['kind'] =  inp['metaDataProperty']['GeocoderMetaData']['kind']
+    kind =  inp['metaDataProperty']['GeocoderMetaData']['kind']
     out['text'] = inp['metaDataProperty']['GeocoderMetaData']['text']
     out['point'] = {
         'type': 'Point',
@@ -120,11 +120,11 @@ def object_to_need_format(inp):
     }
     components = inp['metaDataProperty']['GeocoderMetaData']['Address']['Components']
     components = {a['kind']: a['name'] for a in components}
-    if(out['kind'] == 'house'):
+    if(kind == 'house' and components.get('street') != None):
         out['street'] = components['street']
         out['house'] = components['house']
         return out
-    elif(out['kind'] == 'street'):
+    elif(kind == 'street'):
         out['street'] = components['street']
         return out
     else:
