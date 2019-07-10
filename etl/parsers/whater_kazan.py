@@ -56,9 +56,9 @@ def get_data_from_day(requests_day):
 
         output_data = []
         dict_template = {
-            'type': 'energy',
+            'type': 'whater',
             'description': 'Отключение водоснабжения',
-            'contact_information': ''
+            'contact_information': 'Водоканал г.Казань, телефон +7 (843) 231-62-60'
         }
         dict_template_with_dates = dict_template.copy()
         active = False
