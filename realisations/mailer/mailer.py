@@ -16,11 +16,11 @@ def get_events_for_user(user):
         ut_begin = int(time.mktime(begin.timetuple()))
         ut_end = int(time.mktime(end.timetuple()))
 
-        url = api_url + f'?type={wish["type_event"]}&street="{user["street"]}"&begin={ut_begin}&end={ut_end}'
+        url = api_url + f'event?type={wish["type_event"]}&street={user["street"]}&begin={ut_begin}&end={ut_end}'
         if(user.get('house') is not None):
-            url += f'&house="{user["house"]}"'
+            url += f'&house={user["house"]}'
         response = requests.get(url)
-        events += response.json()
+        events += list(response.json().values())
     return events
 
 
@@ -63,5 +63,6 @@ if __name__ == "__main__":
 
     for user in cursor:
         events = get_events_for_user(user)
-        message = gen_message(user, events)
-        smtp_obj.send_message(user['email'], message, title)
+        if(len(events)):
+            message = gen_message(user, events)
+            smtp_obj.send_message(user['email'], message, title)
