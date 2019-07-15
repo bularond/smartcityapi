@@ -113,7 +113,7 @@ def object_to_need_format(inp):
     inp = inp['GeoObject']
     out = {}
     kind =  inp['metaDataProperty']['GeocoderMetaData']['kind']
-    out['text'] = inp['metaDataProperty']['GeocoderMetaData']['text']
+    out['full_address'] = inp['metaDataProperty']['GeocoderMetaData']['text']
     out['house_geopos'] = {
         'type': 'Point',
         'coordinates': list(map(float, inp['Point']['pos'].split()))

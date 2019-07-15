@@ -26,15 +26,16 @@ class Database:
             "house" : "",
             "wish_list" : [],
             "house_geopos" : {},
-            "chat_stage": 'registration'
+            "chat_stage": 'address_waiting',
+            'alert_time': 17
         }
         user_tuple.update(user)
         self.users.insert(user_tuple)
 
-    def update(self, users, key, value):
+    def update(self, user, key, value):
         self.users.update(
             {
-                'user_id': users['user_id']
+                'user_id': user['user_id']
             }, 
             {
                 '$set': {
