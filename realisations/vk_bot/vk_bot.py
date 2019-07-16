@@ -38,14 +38,15 @@ def menu(user, old_payload = None):
     '''
     Принемает на вход данные с нажатой кнопки.
     Возвращает dict с полями 
-    > update_
+    > update_alert_time
     > update_wish_list
+    > waiting_adress
     > keypad
     > message
     Чтобы прочесть этот моудуль, надо свернуть все и понять общую структуру
     '''
     if(old_payload == None):
-        old_payload = '{"value": "return", "parent": {"title": "main", "page": 0, "value": ""}, "title": "sub", "page": 0}'
+        old_payload = '{"val": "return", "prnt": {"title": "main", "page": 0, "val": "", "prnt":{}}, "title": "sub", "page": 0}'
     else:
         old_payload = old_payload.replace("'", '"')
 
@@ -53,7 +54,7 @@ def menu(user, old_payload = None):
     new_payload = {
         'title': old_payload['title'],
         'page': old_payload['page'],
-        'parent': {}
+        'prnt': old_payload.get('prnt')
     }
     output = {
         'message': ''
@@ -61,79 +62,99 @@ def menu(user, old_payload = None):
 
     # Реагирование на кнопку, определение новой клавиатуры
     if  (old_payload['title'] == 'main'):
-        if(old_payload['value'] == 'sub'):
+        if(old_payload['val'] == 'sub'):
             new_payload['title'] = 'sub'
             output['message'] = 'Список категорий.\nНажмите, чтобы посмотреть список событий по данной категории.'
-        elif(old_payload['value'] == 'unsub'):
-            new_payload['title'] = 'unsub'
-            output['message'] = 'Список ваших подписок.\n'
-        elif(old_payload['value'] == 'alert_time'):
+        elif(old_payload['val'] == 'alert_time'):
             new_payload['title'] = 'alert_time'
-        elif(old_payload['title'] == 'adr_change'):
+            output['message'] = 'Выберете время, в которое будут приходить сообщения.'
+        elif(old_payload['val'] == 'unsub'):
+            new_payload['title'] = 'unsub'
+            output['message'] = 'Список ваших подписок.\nНажмите, чтобы отписаться.'
+        elif(old_payload['val'] == 'adr_change'):
             new_payload['title'] = 'adr_change'
+            output['waiting_adress'] = True
         new_payload['page'] = 0
-        new_payload['parent'] = old_payload.copy()
+        new_payload['prnt'] = old_payload.copy()
     elif(old_payload['title'] == 'sub'):
-        if(old_payload['value'] == 'next_pege'):
+        if(old_payload['val'] == 'next_pege'):
             new_payload['page'] += 1
-        elif(old_payload['value'] == 'previous_page'):
+            output['message'] = 'Переход на следущую страницу.'
+        elif(old_payload['val'] == 'previous_page'):
             new_payload['page'] -= 1
-        elif(old_payload['value'] == 'return'):
-            new_payload = old_payload['parent']
-            del new_payload['value']
+            output['message'] = 'Переход на предыдущую страницу.'
+        elif(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            del new_payload['val']
+            output['message'] = 'Главное меню.'
         else:
             new_payload['title'] = 'events'
             new_payload['page'] = 0
-            new_payload['parent'] = old_payload.copy()
+            new_payload['prnt'] = old_payload.copy()
+            output['message'] = 'Выбор конкретного события.'
     elif(old_payload['title'] == 'events'):
-        if(old_payload['value'] == 'next_page'):
+        if(old_payload['val'] == 'next_page'):
             new_payload['page'] += 1
-        elif(old_payload['value'] == 'previous_page'):
+            output['message'] = 'Следующая страница.'
+        elif(old_payload['val'] == 'previous_page'):
             new_payload['page'] -= 1
-        elif(old_payload['value'] == 'return'):
-            new_payload = old_payload['parent']
-            del new_payload['value']
+            output['message'] = 'Предыдущая страница'
+        elif(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            del new_payload['val']
+            output['message'] = 'Выбор категории.'
         else:
             new_payload['title'] = 'days'
             new_payload['page'] = 0
-            new_payload['parent'] = old_payload.copy()
+            new_payload['prnt'] = old_payload.copy()
+            output['message'] = 'Выберете количество дней, за которое хотите получить оповещание.'
     elif(old_payload['title'] == 'days'):
-        if(old_payload['value'] == 'next_pege'):
+        if(old_payload['val'] == 'next_pege'):
             new_payload['page'] += 1
-        elif(old_payload['value'] == 'previous_page'):
+            output['message'] = 'Следующая страница.'
+        elif(old_payload['val'] == 'previous_page'):
             new_payload['page'] -= 1
-        elif(old_payload['value'] == 'return'):
-            new_payload = old_payload['parent']
-            del new_payload['value']
+            output['message'] = 'Предыдущая страница'
+        elif(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            del new_payload['val']
+            output['message'] = 'Выбор события.'
         else:
             new_payload = old_payload.copy()
-            del new_payload['value']
+            del new_payload['val']
 
-            event_type = new_payload['parent']['value']
-            event_time_before = old_payload['value']
+            event_type = new_payload['prnt']['val']
+            event_time_before = old_payload['val']
             user['wish_list'].append({'event_type': event_type, 'event_time_before': event_time_before})
             output['update_wish_list'] = (event_type, event_time_before)
-            output['message'] = 'Добавлена подписка на %s за %d дней до события' % (old_payload['parent']['parent']['value'], event_time_before)
+            output['message'] = 'Добавлена подписка на %s за %d дней до события' % (old_payload['prnt']['prnt']['val'], event_time_before)
     elif(old_payload['title'] == 'unsub'): #TODO
-        if(old_payload['value'] == 'next_pege'):
+        if(old_payload['val'] == 'next_pege'):
             new_payload['page'] += 1
-        elif(old_payload['value'] == 'previous_page'):
+            output['message'] = 'Следующая страница.'
+        elif(old_payload['val'] == 'previous_page'):
             new_payload['page'] -= 1
-        elif(old_payload['value'] == 'return'):
-            new_payload = old_payload['parent']
-            del new_payload['value']
+            output['message'] = 'Предыдущая страница.'
+        elif(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            del new_payload['val']
+            output['message'] = 'Главное меню.'
         else:
             new_payload['title'] = 'sub'
             new_payload['page'] = 0
-            new_payload['parent'] = old_payload.copy()
-    elif(old_payload['title'] == 'alert_time'): 
-        if(old_payload['value'] == 'return'):
-            new_payload = old_payload['parent']
+            new_payload['prnt'] = old_payload.copy()
+    elif(old_payload['title'] == 'alert_time'):
+        if(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            output['message'] = 'Главное меню'
         else:
-            output['update_alert_time'] = old_payload['value']
-            user['alert_time'] = old_payload['value']
-    elif(old_payload['title'] == 'adr_change'): #TODO
-        pass
+            output['update_alert_time'] = old_payload['val']
+            user['alert_time'] = old_payload['val']
+            output['message'] = 'Время опевещаний установлено на %d:00.' % old_payload['val']
+    elif(old_payload['title'] == 'adr_change'):
+        if(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            output['message'] = 'Главное меню.'
 
     keyboard = VkKeyboard(one_time=False)
 
@@ -148,13 +169,13 @@ def menu(user, old_payload = None):
     elif(new_payload['title'] == 'sub'):
         buttons = list(data_set.keys())
     elif(new_payload['title'] == 'events'):
-        buttons = data_set[new_payload['parent']['value']]
+        buttons = data_set[new_payload['prnt']['val']]
     elif(new_payload['title'] == 'days'):
         possible_days = {1, 2, 3, 5, 7}
         if(old_payload['title'] == 'days'):
-            event_type = old_payload['parent']['value']
+            event_type = old_payload['prnt']['val']
         elif(old_payload['title'] == 'events'):
-            event_type = old_payload['value']
+            event_type = old_payload['val']
         selected_days = set(
             map(
                 lambda a: a['event_time_before'],
@@ -170,7 +191,7 @@ def menu(user, old_payload = None):
     elif(new_payload['title'] == 'alert_time'):
         buttons = [[i * 4 + j for j in range(4)] for i in range(6)]
     elif(new_payload['title'] == 'adr_change'): # TODO
-        pass
+        buttons = []
 
     # Если нужны странички
     left_arrow = False
@@ -189,26 +210,26 @@ def menu(user, old_payload = None):
         for line in buttons:
             for button in line:
                 button_payload = new_payload.copy()
-                button_payload.update({'value': button})
+                button_payload.update({'val': button})
                 button_payload = '{\"button\": \"%s\"}' % str(button_payload)
                 if(user['alert_time'] == button):
                     color = VkKeyboardColor.POSITIVE
                 else:
                     color = VkKeyboardColor.DEFAULT
-                keyboard.add_button(label=button, payload=button_payload, color=color)
+                keyboard.add_button(label=f"{button}:00", payload=button_payload, color=color)
             keyboard.add_line()
-    elif(type(buttons[0]) == type([])):
-        for value, label in buttons:
+    elif(len(buttons) and type(buttons[0]) == type([])):
+        for val, label in buttons:
             button_payload = new_payload.copy()
-            button_payload.update({'value': value})
+            button_payload.update({'val': val})
             button_payload = '{\"button\": \"%s\"}' % str(button_payload)
             keyboard.add_button(label=label, payload=button_payload)
-            if not(new_payload['title'] == 'main' and [value, label] == buttons[-1]):
+            if not(new_payload['title'] == 'main' and [val, label] == buttons[-1]):
                 keyboard.add_line()
-    else:
+    elif(len(buttons)):
         for button in buttons:
             button_payload = new_payload.copy()
-            button_payload.update({'value': button})
+            button_payload.update({'val': button})
             button_payload = '{\"button\": \"%s\"}' % str(button_payload)
             keyboard.add_button(label=button, payload=button_payload)
             keyboard.add_line()
@@ -216,12 +237,12 @@ def menu(user, old_payload = None):
     # Создание стрелок
     if(left_arrow):
         arrow_payload = new_payload.copy()
-        arrow_payload['value'] = 'previous_page'
+        arrow_payload['val'] = 'previous_page'
         arrow_payload = '{\"button\": \"%s\"}' % str(arrow_payload)
         keyboard.add_button(label= '←', payload=arrow_payload)
     if(right_arrow):
         arrow_payload = new_payload.copy()
-        arrow_payload['value'] = 'next_page'
+        arrow_payload['val'] = 'next_page'
         arrow_payload = '{\"button\": \"%s\"}' % str(arrow_payload)
         keyboard.add_button(label= '→', payload=arrow_payload)
     if(left_arrow or right_arrow):
@@ -230,16 +251,10 @@ def menu(user, old_payload = None):
     # Создние кнопки Назад
     if(new_payload['title'] != 'main'):
         return_payload = new_payload.copy()
-        return_payload.update({'value': 'return'})
+        return_payload.update({'val': 'return'})
         return_payload = '{\"button\": \"%s\"}' % str(return_payload)
         keyboard.add_button(label='Назад', payload=return_payload)
 
-    answers = {
-        'main': 'Главное меню.', #TODO 
-        'sub': "Выбирете категорию подписки или нажмите Далее.",
-        'events': "Выберете тип событий, на которое хотите подписаться. Чтобы вернутся к выбору категории нажмите Назад.",
-        'days': "Выберете количество дней, за которое хотите получить уведомление о событии. Можете выбрать несколько, тогда опопвещение придет несколько раз. Для того, чтобы вернутся нажмите Назад"
-    }
     output['keyboard'] = keyboard.get_keyboard()
 
     return output
@@ -255,6 +270,7 @@ def answer_bot(vk, db):
                 user = db.find_by_user_id(event.user_id)
 
             text = event.text
+            print(text)
             payload = {}
             if(event.extra_values.get('payload') is not None):
                 payload = json.loads(event.extra_values['payload'])
@@ -285,8 +301,7 @@ def answer_bot(vk, db):
 
                     answer.update(menu(user))
                     message = f"""Установлен адрес {geodata[0]['full_address']}.
-                    Изменить или уточнить его можно в Меню смены адреса.
-                    Теперь чтобы подписаться на события нажмите на кнопку Меню подписок."""
+                    Изменить или уточнить его можно в Меню смены адреса."""
                     message = message.replace(' '*20, '')
                     answer['message'] = message
                 else:
@@ -303,6 +318,8 @@ def answer_bot(vk, db):
                     db.update(user, 'alert_time', menu_output['update_alert_time'])
                 if(menu_output.get('update_wish_list')):
                     db.add_in_wish_list(user, *menu_output['update_wish_list'])
+                if(menu_output.get('waiting_adress')):
+                    db.update(user, 'chat_stage', 'address_waiting')
 
             else:
                 answer['message'] = 'Команда не определена'
