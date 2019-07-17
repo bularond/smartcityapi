@@ -19,6 +19,10 @@ class Database:
         else:
             return None
 
+    def get_cursor_by_alert_time(self, alert_time):
+        cursor = self.users.find({'alert_time': alert_time})
+        return cursor
+
     def insert_one(self, user):
         user_tuple = {
             "user_id" : 0,
@@ -51,6 +55,21 @@ class Database:
             }, 
             {
                 '$push': {
+                    'wish_list': {
+                        'event_type': event_type,
+                        'event_time_before': event_time_before
+                    }
+                }
+            }
+        )
+
+    def del_from_wish_list(self, user, event_type, event_time_before):
+        self.users.update(
+            {
+                'user_id': user['user_id']
+            }, 
+            {
+                '$pull': {
                     'wish_list': {
                         'event_type': event_type,
                         'event_time_before': event_time_before

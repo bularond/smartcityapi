@@ -50,7 +50,7 @@ def gen_message(user, events):
         if(event.get('end') is not None):
             end = datetime.utcfromtimestamp(event['end'])
             event_string += f" до {end.day} {months[end.month]} {end.year} года"
-        event_string += f" произойдет {event['description']} по адресу {event['text']}"
+        event_string += f" произойдет {event['description']} по адресу {event['full_address']}"
         message += event_string + "\n\n"
     return message
 

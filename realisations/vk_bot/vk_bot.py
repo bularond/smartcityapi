@@ -1,12 +1,16 @@
-import vk_api
-from vk_api.longpoll import VkLongPoll, VkEventType
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-from settings import vk_api_key, api_url
-from threading import Thread
-import requests
 import json
+import time
+from datetime import datetime, timedelta
 from random import randint
+from threading import Thread
+
+import requests
+import vk_api
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+from vk_api.longpoll import VkEventType, VkLongPoll
+
 from database import Database
+from settings import api_url, vk_api_key
 from yandex_geocoder import str_to_geo_data
 
 
@@ -19,8 +23,53 @@ def get_pages(lst, count):
     return pages
 
 
-def add_in_wishlist(user, event_type, event_time_before):
-    print(user['user_id'], event_type, event_time_before)
+def pretty_date(date):
+    date = datetime.fromtimestamp(date)
+    months = {
+        1: "января",
+        2: "февраля",
+        3: "марта",
+        4: "апреля",
+        5: "мая",
+        6: "июня",
+        7: "июля",
+        8: "августа",
+        9: "сентября",
+        10: "октября",
+        11: "ноября",
+        12: "декабря"
+    }
+    return f'{str(100+date.hour)[1:]}:{str(100+date.minute)[1:]} {date.day} {months[date.month]}'
+
+
+def gen_data():
+    pass
+
+
+def get_data_from_api(event_type, begin, end=None, street=None, house=None):
+    if(end is None):
+        end = begin + timedelta(days=1)
+    ut_begin = int(time.mktime(begin.timetuple()))
+    ut_end = int(time.mktime(end.timetuple()))
+
+    output = []
+    offset = 0
+    count = 50
+    while(True):
+        url = api_url + f'event?type={event_type}&begin={ut_begin}&end={ut_end}&count={count}&offset={offset}'
+        if(street):
+            url = url + '&street=' + street
+        if(house):
+            url = url + '&house=' + house
+        respound = requests.get(url)
+        data = respound.json()
+        if(len(data)):
+            output += list(data.values())
+        offset += count
+        if(len(data) < count):
+            break
+    return output
+
 
 data_set = {
     'ЖКХ': [
@@ -34,6 +83,13 @@ data_set = {
     ]
 }
 
+def type_to_label(inp_title):
+    for i in data_set.values():
+        for title, text in i:
+            if(inp_title == title):
+                return text
+
+
 def menu(user, old_payload = None):
     '''
     Принемает на вход данные с нажатой кнопки.
@@ -43,6 +99,7 @@ def menu(user, old_payload = None):
     > waiting_adress
     > keypad
     > message
+    > del_wish
     Чтобы прочесть этот моудуль, надо свернуть все и понять общую структуру
     '''
     if(old_payload == None):
@@ -73,7 +130,11 @@ def menu(user, old_payload = None):
             output['message'] = 'Список ваших подписок.\nНажмите, чтобы отписаться.'
         elif(old_payload['val'] == 'adr_change'):
             new_payload['title'] = 'adr_change'
+            output['message'] = 'Напишите адрес, который хотите указать'
             output['waiting_adress'] = True
+        elif(old_payload['val'] == 'show'):
+            new_payload['title'] = 'show'
+            output['message'] = 'Выберете день, за который хотите получить все события, по вашим подпискам'
         new_payload['page'] = 0
         new_payload['prnt'] = old_payload.copy()
     elif(old_payload['title'] == 'sub'):
@@ -109,7 +170,7 @@ def menu(user, old_payload = None):
             new_payload['prnt'] = old_payload.copy()
             output['message'] = 'Выберете количество дней, за которое хотите получить оповещание.'
     elif(old_payload['title'] == 'days'):
-        if(old_payload['val'] == 'next_pege'):
+        if(old_payload['val'] == 'next_page'):
             new_payload['page'] += 1
             output['message'] = 'Следующая страница.'
         elif(old_payload['val'] == 'previous_page'):
@@ -127,8 +188,8 @@ def menu(user, old_payload = None):
             event_time_before = old_payload['val']
             user['wish_list'].append({'event_type': event_type, 'event_time_before': event_time_before})
             output['update_wish_list'] = (event_type, event_time_before)
-            output['message'] = 'Добавлена подписка на %s за %d дней до события' % (old_payload['prnt']['prnt']['val'], event_time_before)
-    elif(old_payload['title'] == 'unsub'): #TODO
+            output['message'] = 'Добавлена подписка на %s за %d дней до события' % (old_payload['prnt']['val'], event_time_before)
+    elif(old_payload['title'] == 'unsub'):
         if(old_payload['val'] == 'next_pege'):
             new_payload['page'] += 1
             output['message'] = 'Следующая страница.'
@@ -140,9 +201,23 @@ def menu(user, old_payload = None):
             del new_payload['val']
             output['message'] = 'Главное меню.'
         else:
-            new_payload['title'] = 'sub'
+            new_payload['title'] = 'unsub_days'
             new_payload['page'] = 0
             new_payload['prnt'] = old_payload.copy()
+    elif(old_payload['title'] == 'unsub_days'):
+        if(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            del new_payload['val']
+            output['message'] = 'Список ваших подписок.\nНажмите, чтобы отписаться.'
+        else:
+            new_payload = old_payload.copy()
+            del new_payload['val']
+
+            event_type = new_payload['prnt']['val']
+            event_time_before = old_payload['val']
+            user['wish_list'].remove({'event_type': event_type, 'event_time_before': event_time_before})
+            output['del_wish'] = (event_type, event_time_before)
+            output['message'] = 'Удалена подписка на %s за %d дней до события' % (old_payload['prnt']['val'], event_time_before)
     elif(old_payload['title'] == 'alert_time'):
         if(old_payload['val'] == 'return'):
             new_payload = old_payload['prnt']
@@ -155,6 +230,11 @@ def menu(user, old_payload = None):
         if(old_payload['val'] == 'return'):
             new_payload = old_payload['prnt']
             output['message'] = 'Главное меню.'
+    elif(old_payload['title'] == 'show'): #TODO
+        if(old_payload['val'] == 'return'):
+            new_payload = old_payload['prnt']
+            del new_payload['val']
+            output['message'] = 'Список ваших подписок.\nНажмите, чтобы отписаться.'
 
     keyboard = VkKeyboard(one_time=False)
 
@@ -164,7 +244,8 @@ def menu(user, old_payload = None):
             ['sub', 'Меню подписок'],
             ['alert_time', 'Меню выбора времени оповещания'],
             ['unsub', 'Меню управления подписками'],
-            ['adr_change', 'Меню смены адреса']
+            ['adr_change', 'Меню смены адреса'],
+            ['show', 'Все события за день']
         ]
     elif(new_payload['title'] == 'sub'):
         buttons = list(data_set.keys())
@@ -186,17 +267,37 @@ def menu(user, old_payload = None):
             )
         )
         buttons = list(possible_days - selected_days)
-    elif(new_payload['title'] == 'unsub'): #TODO
-        pass
+    elif(new_payload['title'] == 'unsub'): 
+        buttons = []
+        for wish in user['wish_list']:
+            button = [
+                wish['event_type'],
+                type_to_label(wish['event_type'])
+            ]
+            if(button not in buttons):
+                buttons.append(button)
+        if(len(buttons) == 0):
+            output['message'] = 'На данный момент подписок нет. Чтобы это исправить зайдите в Меню подписок'
+    elif(new_payload['title'] == 'unsub_days'):
+        wishs = filter(
+            lambda wish: wish['event_type'] == new_payload['prnt']['val'], 
+            user['wish_list']
+        )
+        buttons = list(map(
+            lambda wish: wish['event_time_before'],
+            wishs
+        ))
     elif(new_payload['title'] == 'alert_time'):
         buttons = [[i * 4 + j for j in range(4)] for i in range(6)]
-    elif(new_payload['title'] == 'adr_change'): # TODO
+    elif(new_payload['title'] == 'adr_change'):
         buttons = []
+    elif(new_payload['title'] == 'show'): #TODO
+        pass
 
     # Если нужны странички
     left_arrow = False
     right_arrow = False
-    if(new_payload['title'] != 'adr_change' and len(buttons) > 9):
+    if(len(buttons) > 9):
         pages_list = get_pages(buttons, 8)
         page = new_payload['page']
         if(page > 0):
@@ -274,7 +375,7 @@ def answer_bot(vk, db):
             payload = {}
             if(event.extra_values.get('payload') is not None):
                 payload = json.loads(event.extra_values['payload'])
-            answer = {'random_id': randint(0, 2**31), 'user_id': event.user_id, 'message': 'Команда не определена'}
+            answer = {'random_id': randint(0, 2**31), 'user_id': event.user_id, 'message': 'Описание потеряно'}
 
             if(text.lower() == 'debug restart'):
                 db.users.remove({'user_id': user['user_id']})
@@ -292,7 +393,7 @@ def answer_bot(vk, db):
                 answer['message'] =  message
 
             # Ввел адрес
-            elif(user['chat_stage'] == 'address_waiting'):
+            elif(user['chat_stage'] == 'address_waiting' and not payload.get('button')):
                 geodata = str_to_geo_data(text)
                 if(len(geodata)):
                     for key in geodata[0]:
@@ -320,6 +421,8 @@ def answer_bot(vk, db):
                     db.add_in_wish_list(user, *menu_output['update_wish_list'])
                 if(menu_output.get('waiting_adress')):
                     db.update(user, 'chat_stage', 'address_waiting')
+                if(menu_output.get('del_wish')): 
+                    db.del_from_wish_list(user, *menu_output['del_wish'])
 
             else:
                 answer['message'] = 'Команда не определена'
@@ -327,7 +430,30 @@ def answer_bot(vk, db):
             vk.method('messages.send', answer)
 
 def alert_bot(vk, db):
-    pass 
+    previous_hour = datetime.now().hour - 1
+    while(True):
+        if(datetime.now().hour != previous_hour):
+            previous_hour = datetime.now().hour
+
+            cursor = db.get_cursor_by_alert_time(datetime.now().hour)
+            for user in cursor():
+                street = user['street']
+                house = user.get('house')
+
+                events = []
+                for wish in user['wish_list']:
+                    begin = datetime.now() - timedelta(days=wish['date_time_before'] - 1, hours=1)
+                    end = datetime.now() + timedelta(days=wish['date_time_before'], hours=1)
+                    event_type = wish['event_type']
+                    alert_bot += get_data_from_api(event_type, begin, end, street, house)
+
+                for event in events:
+                    pretty_begin = pretty_date(event['begin'])
+                    pretty_end = pretty_date(event['end'])
+                    message = '{event["description"]} произойдет c {pretty_begin} до {pretty_end} по адресу {event["text"]}'
+
+
+        time.sleep(120)
 
 if __name__ == "__main__":
     vk = vk_api.VkApi(token=vk_api_key)
@@ -335,6 +461,7 @@ if __name__ == "__main__":
 
     answer_bot_thread = Thread(target=answer_bot, args=(vk, db,))
     alert_bot_tread   = Thread(target=alert_bot,  args=(vk, db,))
-    
+
     answer_bot_thread.start()
-    alert_bot_tread.start()
+    #alert_bot_tread.start()
+    #print(get_data_from_api('energy', datetime(year=2019, month=7, day=22)), )
