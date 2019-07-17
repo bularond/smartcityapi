@@ -120,19 +120,22 @@ def object_to_need_format(inp):
     }
     components = inp['metaDataProperty']['GeocoderMetaData']['Address']['Components']
     components = {a['kind']: a['name'] for a in components}
-    if(kind == 'house' and components.get('street') != None):
+    if(kind == 'house' and components.get('street') != None and components.get('locality')):
+        out['city'] = components.get('locality')
         out['street'] = components['street']
         out['house'] = components['house']
-        return out
-    elif(kind == 'street'):
+    elif(kind == 'street' and components.get('locality') != None):
+        out['city'] = components.get('locality')
         out['street'] = components['street']
-        return out
+    elif(kind == 'locality'):
+        out['city'] = components.get('locality')
     else:
-        return None
+        out = None
+    return out
 
 def str_to_geo_data(st):
     """
-    : Возвращает dict{'street':str, 'house':int, 'geocode': geocode}
+    : Возвращает dict{'city': str, street':str, 'house':str, 'geocode': geocode, 'full_address': str}
     """
     st = '+'.join(st.split())
     url = f"https://geocode-maps.yandex.ru/1.x/?apikey={yandex_geocoder_key}&format=json&geocode={st}"
@@ -149,4 +152,4 @@ def str_to_geo_data(st):
         return data
 
 if __name__ == "__main__":
-    str_to_geo_data("спб Тверская 6")
+    print(str_to_geo_data("Уфа"))
