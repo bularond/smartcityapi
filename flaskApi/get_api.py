@@ -45,8 +45,12 @@ def get_event():
         "street":request.args.get('street', default = None, type = str),
         "house":request.args.get('house', default = None, type = str),
         "contact":request.args.get('contact', default = None, type = str),
+        "_id":request.args.get('_id', default = None, type = str),
+
     }
     deff_ev = []
+    if arguments["_id"] != None:
+        return events.find({"_id":ObjectId(arguments["_id"])})[0]
     for arg in arguments:
         if arguments[arg] != None:
             if arg == "type":
@@ -181,7 +185,9 @@ def registrantion():
     reg_data = request.json
     log = reg_data["login"]
     mail = reg_data["email"]
+    print(exist_users.find({"login":login, "email":mail}))
     if users.find({"login":login, "email":mail}).count() > 0 or exist_users.find({"login":login, "email":mail}).count()>0:
+        print("BABABBABAAB")
         return {"status":"User with this login or email is exist"}
     else:
         enc_pass = hl.md5(reg_data["password"].encode()).hexdigest()
@@ -194,7 +200,7 @@ def registrantion():
 @app.route('/api/put_event', methods=['PUT'])
 def put_event():
     content = request.json
-
+    events = conn.local.Events
     return {"status":"OK"}
 
 
