@@ -111,7 +111,11 @@ def object_to_need_format(inp):
     Преобразовывает данные с сайта geocode-maps.yandex.ru 
     '''
     inp = inp['GeoObject']
-    out = {}
+    out = {
+        'city': '',
+        'street': '',
+        'house': ''
+    }
     kind =  inp['metaDataProperty']['GeocoderMetaData']['kind']
     out['full_address'] = inp['metaDataProperty']['GeocoderMetaData']['text']
     out['house_geopos'] = {
@@ -152,4 +156,4 @@ def str_to_geo_data(st):
         return data
 
 if __name__ == "__main__":
-    print(str_to_geo_data("Уфа"))
+    print(str_to_geo_data("Сочи олимпийский проспект 40"))

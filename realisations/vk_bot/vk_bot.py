@@ -56,7 +56,7 @@ def gen_event_types():
     event_types = [ [i['type'], i['title'] ] for i in responce.values()]
 
 
-def get_data_from_api(event_type, begin, end=None, street=None, house=None):
+def get_data_from_api(event_type, begin, city, end=None, street=None, house=None):
     if(end is None):
         end = begin + timedelta(days=1)
     ut_begin = int(time.mktime(begin.timetuple()))
@@ -66,7 +66,7 @@ def get_data_from_api(event_type, begin, end=None, street=None, house=None):
     offset = 0
     count = 50
     while(True):
-        url = api_url + f'event?type={event_type}&begin={ut_begin}&end={ut_end}&count={count}&offset={offset}'
+        url = api_url + f'event?type={event_type}&begin={ut_begin}&end={ut_end}&count={count}&offset={offset}&city={city}'
         if(street):
             url = url + '&street=' + street
         if(house):
@@ -90,7 +90,8 @@ def type_to_label(inp_title):
 def get_alert_messaages_on_days(user, date, inp_event_type=None, days=1):
     if(type(date) == type(0)):
         date = datetime.fromtimestamp(date)
-    street = user['street']
+    city = user['city']
+    street = user.get('street')
     house = user.get('house')
     events = []
     was_event_types = []
@@ -101,7 +102,7 @@ def get_alert_messaages_on_days(user, date, inp_event_type=None, days=1):
         was_event_types.append(event_type)
         begin = date - timedelta(days=0, hours=1)
         end = date + timedelta(days=days, hours=1)
-        events += get_data_from_api(event_type, begin, end, street, house)
+        events += get_data_from_api(event_type, begin, city, end, street, house)
 
     messages = []
     for event in events:
@@ -399,12 +400,15 @@ def processing_message(vk, db, event):
     if(text.lower() == 'debug restart'):
         db.users.remove({'user_id': user['user_id']})
         answer['message'] = 'Акаунт сброшен'
+        keyboard = VkKeyboard(one_time=True)
+        keyboard.add_button(label='Начать')
+        answer['keyboard'] = keyboard.get_keyboard()
 
     # Нажал кнопку "Начать"
     elif(text.lower() in ['начать', 'start'] and user['chat_stage'] == 'address_waiting'):
         message = """Добро пожаловать в Gradinformer
         Я могу сообщить тебе о том, что происходит в твоем городе.
-        Например об отключении воды в твоем доме или мероприятии недалеко от тебя.
+        Например, об отключении воды в твоем доме или мероприятии недалеко от тебя.
         
         Для регистрации напиши место проживания.
         Минимально необходимая информация - город проживания"""
@@ -422,7 +426,7 @@ def processing_message(vk, db, event):
             answer.update(processing_button(user))
             message = f"""Установлен адрес {geodata[0]['full_address']}.
             Изменить или уточнить его можно в Меню смены адреса."""
-            message = message.replace(' '*16, '')
+            message = message.replace(' '*12, '')
             answer['message'] = message
         else:
             answer['message'] = 'Адрес не опознан, попробуйте еще раз'
@@ -440,7 +444,10 @@ def processing_message(vk, db, event):
             if(menu_output.get('update_wish_list')):
                 db.add_in_wish_list(user, *menu_output['update_wish_list'])
             if(menu_output.get('waiting_adress')):
-                db.update(user, 'chat_stage', 'address_waiting')
+                if(user['chat_stage'] == 'menu'):
+                    db.update(user, 'chat_stage', 'address_waiting')
+                else:
+                    db.update(user, 'chat_stage', 'menu')
             if(menu_output.get('del_wish')): 
                 db.del_from_wish_list(user, *menu_output['del_wish'])
             if(menu_output.get('get_inf_on_days')):
