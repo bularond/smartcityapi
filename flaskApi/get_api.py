@@ -21,7 +21,7 @@ CORS(app)
 sender = SMTP("no-repy@gradintegra.com", "|kko)8s2K(WT6u!m")
 
 
-accept_form = "Здравствуйте.\nНа наш сервер пришел запрос о регистрации нового пользователя под ником {}\nПерейдите по ссылке {} для подтверждеия своего аккаунта.\nЕслы Вы не регистрировали аккаунт на сервисе GradInformer проигнорируйте данное сообщение."
+accept_form = "Здравствуйте.\nНа наш сервер пришел запрос о регистрации нового пользователя под ником {}\nПерейдите по ссылке \n{}\n для подтверждеия своего аккаунта.\nЕсли Вы не регистрировали аккаунт на сервисе GradInformer проигнорируйте данное сообщение."
 
 
 def serial(dct):
@@ -45,12 +45,13 @@ def get_event():
         "street":request.args.get('street', default = None, type = str),
         "house":request.args.get('house', default = None, type = str),
         "contact":request.args.get('contact', default = None, type = str),
-        "_id":request.args.get('_id', default = None, type = str),
+        "id":request.args.get('id', default = None, type = str),
+        "city":request.args.get('city', default = None, type = str),
 
     }
     deff_ev = []
-    if arguments["_id"] != None:
-        return events.find({"_id":ObjectId(arguments["_id"])})[0]
+    if arguments["id"] != None:
+        return serial(events.find({"_id":ObjectId(arguments["id"])})[0])
     for arg in arguments:
         if arguments[arg] != None:
             if arg == "type":
@@ -109,6 +110,11 @@ def get_event():
                     deff_ev.append({arg:arguments[arg]})
                 except:
                     pass
+            elif arg == "city":
+                try:
+                    deff_ev.append({arg:arguments[arg]})
+                except:
+                    pass
             elif arg == "contact":
                 try:
                     deff_ev.append({arg:arguments[arg]})
@@ -120,19 +126,17 @@ def get_event():
                 except:
                     pass
     good_ev = {}
+    print(deff_ev)
     if len(deff_ev) == 0:
         for i in range(min(events.find({}).count(), arguments["count"])):
             good_ev[i] = (serial(events.find({})[i]))
-            print(good_ev[i])
     elif len(deff_ev) == 1:
         print(deff_ev)
         for i in range(min(events.find(deff_ev[0]).count(), arguments["count"])):
             good_ev[i] = (serial(events.find(deff_ev[0])[i]))
-            print(good_ev[i])
     else:
         for i in range(min(events.find({"$and":deff_ev}).count(), arguments["count"])):
             good_ev[i] = (serial(events.find({"$and":deff_ev})[i]))
-            print(good_ev[i])
     return good_ev
 
 @app.route('/api/event_types', methods=['GET'])
@@ -183,25 +187,90 @@ def registrantion():
     users = conn.local.NA_Users_writers
     exist_users = conn.local.Users_writers
     reg_data = request.json
-    log = reg_data["login"]
-    mail = reg_data["email"]
-    print(exist_users.find({"login":login, "email":mail}))
+    print(reg_data)
+    login = reg_data.get("login")
+    mail = reg_data.get("email")
+    passw = reg_data.get("password")
+    if login == None or mail == None or passw == None:
+        return {"status":"Bad auth", "description":"You need set the login, password and email"}
     if users.find({"login":login, "email":mail}).count() > 0 or exist_users.find({"login":login, "email":mail}).count()>0:
-        print("BABABBABAAB")
         return {"status":"User with this login or email is exist"}
     else:
         enc_pass = hl.md5(reg_data["password"].encode()).hexdigest()
         url = ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
-        users.insert_one({"auth_url":url, "login":log, "email":mail, "password":enc_pass})
-        sender.send_message(mail, accept_form.format(log, "localhost:1337/api/verification?url={}".format(url)), "GradInformer")
+        users.insert_one({"auth_url":url, "login":login, "email":mail, "password":enc_pass})
+        sender.send_message(mail, accept_form.format(login, "localhost:1337/api/verification?url={}".format(url)), "GradInformer")
         print(reg_data)
         return reg_data
+
+def removekey(d, key):
+    r = dict(d)
+    del r[key]
+    return r
+
+@app.route('/api/get_history', methods=['GET'])
+def get_history():
+    events_history = conn.local.Events_history
+    id = request.args.get('id', default = None, type = str)
+    count = events_history.find({"ed_id":id}).count()
+    if count == 0:
+        abort(500, "Bad id")
+    ex = {}
+    for i in range(count):
+        ex[i] = serial(events_history.find({"ed_id":id, "count":i})[0])
+    return ex
+
+@app.route('/api/get_cookies', methods=['GET'])
+def return_cookies():
+    return request.cookies
 
 @app.route('/api/put_event', methods=['PUT'])
 def put_event():
     content = request.json
     events = conn.local.Events
+    events_history = conn.local.Events_history
+    users = conn.local.Users_writers
+
+    arguments = {
+        "type":content.get("type"),
+        "begin":content.get("begin"),
+        "end":content.get("end"),
+        "lat":content.get("lat"),
+        "lon":content.get("lon"),
+        "description":content.get("description"),
+        "street":content.get("street"),
+        "house":content.get("house"),
+        "full_address":content.get("full_address"),
+        "city":content.get("city"),
+        "token":content.get("token"),
+        "id":content.get("id")
+    }
+
+    bad_end = arguments["end"]
+    for arg in arguments:
+        if arguments[arg] == None:
+            if arg == "id":
+                abort(500, "Id is required")
+            elif arg =="token":
+                abort(500, "Api key is required")
+    if users.find({"api_key":arguments["token"]}).count() == 0:
+        abort(500, "Invalid API key")
+    ev = serial(events.find({"_id":ObjectId(arguments["id"])})[0])
+    edit = {}
+    for arg in arguments:
+        if arguments[arg] != None:
+            if arg == "token" or arg == "id":
+                pass
+            else:
+                ev[arg] = arguments[arg]
+                edit[arg] = arguments[arg]
+
+    ev = removekey(ev, "_id")
+    events.update({"_id":ObjectId(arguments[arg])}, ev)
+    count_h = events_history.find({"ed_id":arguments["id"]}).count()
+    events_history.insert_one({"ed_id":arguments["id"], "ed_poles":edit, "count":count_h, "user_api":arguments["token"]})
     return {"status":"OK"}
+
 
 
 @app.route('/api/set_event', methods=['POST'])
@@ -215,8 +284,8 @@ def post_event():
         "type":content.get("type"),
         "begin":content.get("begin"),
         "end":content.get("end"),
-        "lat":float(content.get("lat")),
-        "lon":float(content.get("lon")),
+        "lat":content.get("lat"),
+        "lon":content.get("lon"),
         "description":content.get("description"),
         "street":content.get("street"),
         "house":content.get("house"),
