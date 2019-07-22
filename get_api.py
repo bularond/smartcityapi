@@ -1,5 +1,6 @@
 ## -*- coding: utf-8 -*-
 from flask import Flask, abort
+from flask_wtf.csrf import CSRFProtect
 from flask import request
 from smtp_mail import SMTP
 from flask_cors import CORS, cross_origin
@@ -15,7 +16,7 @@ import json
 conn = pymongo.MongoClient("gradintegra.com", 27017)
 
 app = Flask(__name__)
-CORS(app, support_credentials=True)
+csrf = CSRFProtect(app)
 
 
 sender = SMTP("no-repy@gradintegra.com", "|kko)8s2K(WT6u!m")
@@ -284,8 +285,7 @@ def put_event():
     events_history.insert_one({"ed_id":arguments["id"], "ed_poles":edit, "count":count_h, "user_api":arguments["token"]})
     return {"status":"OK"}
 
-
-
+@csrf.exempt
 @app.route('/api/set_event', methods=['POST', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def post_event():
