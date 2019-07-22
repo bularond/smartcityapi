@@ -2,7 +2,7 @@
 from flask import Flask, abort
 from flask import request
 from smtp_mail import SMTP
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from pymongo import GEO2D
 from bson import ObjectId
 import hashlib as hl
@@ -15,7 +15,7 @@ import json
 conn = pymongo.MongoClient("gradintegra.com", 27017)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, support_credentials=True)
 
 
 sender = SMTP("no-repy@gradintegra.com", "|kko)8s2K(WT6u!m")
@@ -47,8 +47,9 @@ def get_event():
         "contact":request.args.get('contact', default = None, type = str),
         "id":request.args.get('id', default = None, type = str),
         "city":request.args.get('city', default = None, type = str),
-
+        "sort":request.args.get('sort', default = None, type = str),
     }
+    sort_mode = 1
     deff_ev = []
     if arguments["id"] != None:
         return serial(events.find({"_id":ObjectId(arguments["id"])})[0])
@@ -120,6 +121,11 @@ def get_event():
                     deff_ev.append({arg:arguments[arg]})
                 except:
                     pass
+            elif arg == "sort":
+                if arguments[arg] == "ascending":
+                    sort_mode = 1
+                elif arguments[arg] == "descending":
+                    sort_mode = -1
             elif arg == "description":
                 try:
                     deff_ev.append({arg: {"$regex": arguments[arg]}})
@@ -128,16 +134,25 @@ def get_event():
     good_ev = {}
     print(deff_ev)
     if len(deff_ev) == 0:
-        for i in range(min(events.find({}).count(), arguments["count"])):
-            good_ev[i] = (serial(events.find({})[i]))
+        for i in range(min(events.find({}).count(), arguments["count"] + arguments["offset"])):
+            if i >= arguments["offset"]:
+                good_ev[i] = (serial(events.find({})[i]))
     elif len(deff_ev) == 1:
         print(deff_ev)
-        for i in range(min(events.find(deff_ev[0]).count(), arguments["count"])):
-            good_ev[i] = (serial(events.find(deff_ev[0])[i]))
+        for i in range(min(events.find(deff_ev[0]).count(), arguments["count"] + arguments["offset"])):
+            if i >= arguments["offset"]:
+                good_ev[i] = (serial(events.find(deff_ev[0])[i]))
     else:
-        for i in range(min(events.find({"$and":deff_ev}).count(), arguments["count"])):
-            good_ev[i] = (serial(events.find({"$and":deff_ev})[i]))
+        for i in range(min(events.find({"$and":deff_ev}).count(), arguments["count"] + arguments["offset"])):
+            if i >= arguments["offset"]:
+                good_ev[i] = (serial(events.find({"$and":deff_ev}).sort("begin", sort_mode)[i]))
     return good_ev
+
+
+@app.route('/api/qwe', methods=['POST'])
+def qwe():
+    print(request.json)
+    return {"STATUS":"ZAEB"}
 
 @app.route('/api/event_types', methods=['GET'])
 def get_event_types():
@@ -273,7 +288,8 @@ def put_event():
 
 
 
-@app.route('/api/set_event', methods=['POST'])
+@app.route('/api/set_event', methods=['POST', 'OPTIONS'])
+@cross_origin(supports_credentials=True)
 def post_event():
     content = request.json
     print(content)
@@ -286,12 +302,15 @@ def post_event():
         "end":content.get("end"),
         "lat":content.get("lat"),
         "lon":content.get("lon"),
+        "contact":content.get("contact"),
         "description":content.get("description"),
         "street":content.get("street"),
         "house":content.get("house"),
         "full_address":content.get("full_address"),
         "city":content.get("city"),
         "token":content.get("token"),
+        "title":content.get("title"),
+
     }
 
     bad_end = arguments["end"]
@@ -313,21 +332,32 @@ def post_event():
                 bad_end = arguments["begin"] + 24*3600
             elif arg =="token":
                 abort(500, "Api key is required")
+            else:
+                arguments[arg] = ""
     if users.find({"api_key":arguments["token"]}).count() == 0:
         abort(500, "Invalid API key")
+    print(arguments["token"])
     try:
         events.insert_one(
             {
                 "type":arguments["type"],
                 "begin":arguments["begin"],
                 "end":bad_end,
-                "lat":arguments["lat"],
-                "lon":arguments["lon"],
+                "point" : {
+                    "type" : "Point",
+                    "coordinates" : [
+                        arguments["lon"],
+                        arguments["lat"]
+                    ]
+                },
                 "description":arguments["description"],
                 "street":arguments["street"],
                 "house":arguments["house"],
                 "full_address":arguments["full_address"],
+                "description":arguments["description"],
                 "city":arguments["city"],
+                "contact":arguments["contact"],
+                "title":arguments["title"]
 
             }
         )
